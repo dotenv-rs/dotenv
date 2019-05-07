@@ -25,4 +25,4 @@ proc-macro2 = "0.4"
 quote = "0.6"
 syn = "0.15"
 proc-macro-hack = "0.5"
-dotenv = { version = "0.13", path = "../dotenv" }
+dotenv = { version = "0.14", path = "../dotenv" }

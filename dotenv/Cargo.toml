@@ -38,8 +38,8 @@ version = "1.0.0"
 
 [dependencies.regex]
 version = "1.0"
-[dev-dependencies.tempdir]
-version = "0.3.0"
+[dev-dependencies.tempfile]
+version = "3.0.0"
 
 [features]
 backtrace = ["failure/backtrace"]

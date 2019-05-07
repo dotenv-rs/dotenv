@@ -17,5 +17,5 @@ repository = "https://github.com/purpliminal/rust-dotenv"
 description = "A `dotenv` implementation for Rust"
 
 [dependencies]
-dotenv_codegen_impl = { version = "0.13", path = "../dotenv_codegen_impl" }
+dotenv_codegen_impl = { version = "0.14", path = "../dotenv_codegen_impl" }
 proc-macro-hack = "0.5"
