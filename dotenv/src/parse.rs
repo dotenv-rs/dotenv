@@ -29,7 +29,7 @@ pub fn parse_line(line: &str, mut substitution_data: &mut HashMap<String, Option
 
     LINE_REGEX
         .captures(line)
-        .map_or(Err(Error::LineParse(line.into()).into()), |captures| {
+        .map_or(Err(Error::LineParse(line.into())), |captures| {
             let key = named_string(&captures, "key");
             let value = named_string(&captures, "value");
 
@@ -100,7 +100,7 @@ fn parse_value(input: &str, substitution_data: &mut HashMap<String, Option<Strin
             match c {
                 '\\' | '\'' | '"' | '$' | ' ' => output.push(c),
                 _ => {
-                    return Err(Error::LineParse(input.to_owned()).into());
+                    return Err(Error::LineParse(input.to_owned()));
                 }
             }
 
@@ -173,7 +173,7 @@ fn parse_value(input: &str, substitution_data: &mut HashMap<String, Option<Strin
 
     //XXX also fail if escaped? or...
     if substitution_mode == SubstitutionMode::EscapedBlock || strong_quote || weak_quote {
-        Err(Error::LineParse(input.to_owned()).into())
+        Err(Error::LineParse(input.to_owned()))
     } else {
         apply_substitution(substitution_data, &substitution_name.drain(..).collect::<String>(), &mut output);
         Ok(output)
