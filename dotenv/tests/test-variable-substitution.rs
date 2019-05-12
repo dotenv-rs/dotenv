@@ -1,10 +1,9 @@
-use std::panic;
+mod common;
 
+use std::env;
 use dotenv::*;
 
 use crate::common::*;
-
-mod common;
 
 #[test]
 fn test_variable_substitutions() {
@@ -54,5 +53,6 @@ SUBSTITUTION_WITHOUT_QUOTES={}
         "$KEY"
     ].join(">>"));
 
+    env::set_current_dir(dir.path().parent().unwrap()).unwrap();
     dir.close().unwrap();
 }
