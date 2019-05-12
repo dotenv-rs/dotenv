@@ -116,7 +116,7 @@ fn parse_value(input: &str, substitution_data: &mut HashMap<String, Option<Strin
                 substitution_name.push(c);
             } else {
                 match substitution_mode {
-                    SubstitutionMode::None => panic!("Impossible match branch due to enclosing if condition"),
+                    SubstitutionMode::None => unreachable!(),
                     SubstitutionMode::Block => {
                         if c == '{' && substitution_name.is_empty() {
                             substitution_mode = SubstitutionMode::EscapedBlock;
