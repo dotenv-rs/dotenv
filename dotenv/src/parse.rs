@@ -173,7 +173,8 @@ fn parse_value(input: &str, substitution_data: &mut HashMap<String, Option<Strin
 
     //XXX also fail if escaped? or...
     if substitution_mode == SubstitutionMode::EscapedBlock || strong_quote || weak_quote {
-        Err(Error::LineParse(input.to_owned(), (input.len() - 1).max(0)))
+        let value_length = input.len();
+        Err(Error::LineParse(input.to_owned(), if value_length == 0 { 0 } else { value_length - 1 }))
     } else {
         apply_substitution(substitution_data, &substitution_name.drain(..).collect::<String>(), &mut output);
         Ok(output)
