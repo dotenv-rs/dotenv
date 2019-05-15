@@ -1,8 +1,8 @@
 extern crate proc_macro;
 
-use proc_macro::TokenStream;
 use std::env;
 
+use proc_macro::TokenStream;
 use proc_macro_hack::proc_macro_hack;
 use quote::quote;
 use syn::parse::Parser;
