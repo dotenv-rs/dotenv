@@ -16,16 +16,6 @@ macro_rules! die {
     });
 }
 
-fn make_command(name: &str, args: Vec<&str>) -> Command {
-    let mut command = Command::new(name);
-
-    for arg in args {
-        command.arg(arg);
-    }
-
-    return command;
-}
-
 fn main() {
     let matches = App::new("dotenv")
         .about("Run a command using the environment in a .env file")
@@ -51,7 +41,7 @@ fn main() {
                 .map(|v| v.collect())
                 .unwrap_or(Vec::new());
 
-            make_command(name, args)
+            Command::new(name).args(args)
         },
         _ => die!("error: missing required argument <COMMAND>"),
     };

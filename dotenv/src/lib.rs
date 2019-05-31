@@ -5,10 +5,10 @@
 //! file, if available, and mashes those with the actual environment variables
 //! provided by the operating system.
 
-mod parse;
 mod errors;
-mod iter;
 mod find;
+mod iter;
+mod parse;
 
 use std::env::{self, Vars};
 use std::ffi::OsStr;
@@ -17,8 +17,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Once, ONCE_INIT};
 
 pub use crate::errors::*;
-use crate::iter::Iter;
 use crate::find::Finder;
+use crate::iter::Iter;
 
 static START: Once = ONCE_INIT;
 
@@ -49,7 +49,7 @@ pub fn var<K: AsRef<OsStr>>(key: K) -> Result<String> {
 /// The returned iterator contains a snapshot of the process's environment variables at the
 /// time of this invocation, modifications to environment variables afterwards will not be
 /// reflected in the returned iterator.
-/// 
+///
 /// Examples:
 ///
 /// ```no_run
@@ -78,7 +78,7 @@ pub fn vars() -> Vars {
 /// let my_path = env::home_dir().and_then(|a| Some(a.join("/.env"))).unwrap();
 /// dotenv::from_path(my_path.as_path());
 /// ```
-pub fn from_path<P: AsRef<Path>>(path: P) -> Result<()> {
+pub fn from_path<P: AsRef<Path>>(path: P) -> Result {
     let iter = Iter::new(File::open(path).map_err(Error::Io)?);
     iter.load()
 }
@@ -100,7 +100,10 @@ pub fn from_path<P: AsRef<Path>>(path: P) -> Result<()> {
 ///   println!("{}={}", key, val);
 /// }
 /// ```
-#[deprecated(since = "0.14.1", note = "please use `from_path` in conjunction with `var` instead")]
+#[deprecated(
+    since = "0.14.1",
+    note = "please use `from_path` in conjunction with `var` instead"
+)]
 pub fn from_path_iter<P: AsRef<Path>>(path: P) -> Result<Iter<File>> {
     Ok(Iter::new(File::open(path).map_err(Error::Io)?))
 }
@@ -146,7 +149,10 @@ pub fn from_filename<P: AsRef<Path>>(filename: P) -> Result<PathBuf> {
 ///   println!("{}={}", key, val);
 /// }
 /// ```
-#[deprecated(since = "0.14.1", note = "please use `from_path` in conjunction with `var` instead")]
+#[deprecated(
+    since = "0.14.1",
+    note = "please use `from_path` in conjunction with `var` instead"
+)]
 pub fn from_filename_iter<P: AsRef<Path>>(filename: P) -> Result<Iter<File>> {
     let (_, iter) = Finder::new().filename(filename.as_ref()).find()?;
     Ok(iter)
@@ -177,7 +183,10 @@ pub fn dotenv() -> Result<PathBuf> {
 ///   println!("{}={}", key, val);
 /// }
 /// ```
-#[deprecated(since = "0.14.1", note = "please use `from_path` in conjunction with `var` instead")]
+#[deprecated(
+    since = "0.14.1",
+    note = "please use `from_path` in conjunction with `var` instead"
+)]
 pub fn dotenv_iter() -> Result<iter::Iter<File>> {
     let (_, iter) = Finder::new().find()?;
     Ok(iter)

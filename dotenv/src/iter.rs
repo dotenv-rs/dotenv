@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::env;
-use std::io::{BufReader, Lines};
 use std::io::prelude::*;
+use std::io::{BufReader, Lines};
 
 use crate::errors::*;
 use crate::parse;
@@ -19,7 +19,7 @@ impl<R: Read> Iter<R> {
         }
     }
 
-    pub fn load(self) -> Result<()> {
+    pub fn load(self) -> Result {
         for item in self {
             let (key, value) = item?;
             if env::var(&key).is_err() {
