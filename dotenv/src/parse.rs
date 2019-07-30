@@ -17,7 +17,7 @@ pub fn parse_line(line: &str, mut substitution_data: &mut HashMap<String, Option
             \#.*|                             # A comment, or...
             \s*|                              # ...an empty string, or...
             (export\s+)?                      # ...(optionally preceded by "export")...
-            (?P<key>[A-Za-z_.][A-Za-z0-9_]*)  # ...a key,...
+            (?P<key>[A-Za-z_][A-Za-z0-9_.]*)  # ...a key,...
             =                                 # ...then an equal sign,...
             (?P<value>.+?)?                   # ...and then its corresponding value.
           )\s*
@@ -395,6 +395,19 @@ mod variable_substitution_tests {
             ],
         );
     }
+
+    #[test]
+    fn with_dot() {
+        assert_parsed_string(
+            r#"
+    KEY.Value=VALUE
+    "#,
+            vec![
+                ("KEY.Value", "VALUE"),
+            ],
+        );
+    }
+
 
     #[test]
     fn recursive_substitution() {
