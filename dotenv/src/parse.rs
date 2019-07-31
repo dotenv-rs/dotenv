@@ -529,6 +529,22 @@ mod error_tests {
     }
 
     #[test]
+    fn should_not_allow_dot_as_first_character_of_key() {
+        let wrong_key_value = ".Key=VALUE";
+
+        let parsed_values: Vec<_> = Iter::new(wrong_key_value.as_bytes()).collect();
+
+        assert_eq!(parsed_values.len(), 1);
+
+        if let Err(LineParse(second_value, index)) = &parsed_values[0] {
+            assert_eq!(second_value, wrong_key_value);
+            assert_eq!(*index, 0)
+        } else {
+            assert!(false, "Expected the second value not to be parsed")
+        }
+    }
+
+    #[test]
     fn should_not_parse_illegal_format() {
         let wrong_format = r"<><><>";
         let parsed_values: Vec<_> = Iter::new(wrong_format.as_bytes()).collect();
