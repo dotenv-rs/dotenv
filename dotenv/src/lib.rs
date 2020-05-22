@@ -75,8 +75,8 @@ pub fn vars() -> Vars {
 /// use std::env;
 /// use std::path::{Path};
 ///
-/// let my_path = env::home_dir().and_then(|a| Some(a.join("/.env"))).unwrap();
-/// dotenv::from_path(my_path.as_path());
+/// let my_path = Path::new("/path/to/my.env");
+/// dotenv::from_path(my_path);
 /// ```
 pub fn from_path<P: AsRef<Path>>(path: P) -> Result<()> {
     let iter = Iter::new(File::open(path).map_err(Error::Io)?);
@@ -92,8 +92,8 @@ pub fn from_path<P: AsRef<Path>>(path: P) -> Result<()> {
 /// use std::env;
 /// use std::path::{Path};
 ///
-/// let my_path = env::home_dir().and_then(|a| Some(a.join("/.env"))).unwrap();
-/// let iter = dotenv::from_path_iter(my_path.as_path()).unwrap();
+/// let my_path = Path::new("/path/to/my.env");
+/// let iter = dotenv::from_path_iter(my_path).unwrap();
 ///
 /// for item in iter {
 ///   let (key, val) = item.unwrap();
