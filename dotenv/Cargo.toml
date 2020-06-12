@@ -12,7 +12,6 @@ authors = [
 ]
 description = "A `dotenv` implementation for Rust"
 homepage = "https://github.com/dotenv-rs/dotenv"
-readme = "../README.md"
 keywords = ["environment", "env", "dotenv", "settings", "config"]
 license = "MIT"
 repository = "https://github.com/dotenv-rs/dotenv"
