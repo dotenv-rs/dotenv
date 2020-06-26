@@ -20,8 +20,8 @@ pub fn dotenv(input: TokenStream) -> TokenStream {
 }
 
 fn expand_env(input_raw: TokenStream) -> TokenStream {
-
-    let args = <Punctuated<syn::LitStr, Token![,]>>::parse_terminated.parse(input_raw)
+    let args = <Punctuated<syn::LitStr, Token![,]>>::parse_terminated
+        .parse(input_raw)
         .expect("expected macro to be called with a comma-separated list of string literals");
 
     let mut iter = args.iter();
