@@ -33,23 +33,29 @@ fn expand_env(input_raw: TokenStream) -> syn::Result<TokenStream> {
 
     let var_name = iter
         .next()
-        .ok_or_else(|| syn::Error::new(args.span(), "expected at least 1 argument"))?;
+        .ok_or_else(|| syn::Error::new(args.span(), "dotenv! takes 1 or 2 arguments"))?
+        .value();
     let err_msg = iter.next();
     if iter.next().is_some() {
         return Err(syn::Error::new(
             args.span(),
-            "expected a maximum of 2 arguments",
+            "dotenv! takes 1 or 2 arguments",
         ));
     }
 
-    match env::var(var_name.value()) {
+    match env::var(&var_name) {
         Ok(val) => Ok(quote!(#val).into()),
-        Err(VarError::NotPresent) | Err(VarError::NotUnicode(_)) => Err(syn::Error::new(
+        Err(e) => Err(syn::Error::new(
             var_name.span(),
-            if let Some(lit) = err_msg {
-                lit.value()
-            } else {
-                format!("environment variable `{}` not defined", var_name.value())
+            match (e, err_msg) {
+                (_, Some(lit)) => lit.value(),
+                (VarError::NotPresent, _) => {
+                    format!("environment variable `{}` not defined", var_name)
+                }
+                (VarError::NotUnicode(s), _) => format!(
+                    "environment variable `{}` was not valid unicode: {:?}",
+                    var_name, s
+                ),
             },
         )),
     }
