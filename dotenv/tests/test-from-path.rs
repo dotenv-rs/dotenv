@@ -12,7 +12,7 @@ fn test_from_path() {
     let mut path = env::current_dir().unwrap();
     path.push(".env");
 
-    from_path(&path).ok();
+    let _ = from_path(&path);
 
     assert_eq!(env::var("TESTKEY").unwrap(), "test_val");
 

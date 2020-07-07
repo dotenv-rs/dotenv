@@ -9,7 +9,7 @@ use crate::common::*;
 fn test_default_location() {
     let dir = make_test_dotenv().unwrap();
 
-    dotenv().ok();
+    let _ = dotenv();
     assert_eq!(env::var("TESTKEY").unwrap(), "test_val");
 
     env::set_current_dir(dir.path().parent().unwrap()).unwrap();

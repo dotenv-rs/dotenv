@@ -290,7 +290,7 @@ KEY4='fo ur'
 KEY5="fi ve"
 KEY6=s\ ix
 KEY7=
-KEY8=     
+KEY8=
 KEY9=   # foo
 KEY10  ="whitespace before ="
 KEY11=    "whitespace after ="
@@ -321,7 +321,7 @@ export   SHELL_LOVER=1
         let mut count = 0;
         for (expected, actual) in expected_iter.zip(actual_iter) {
             assert!(actual.is_ok());
-            assert_eq!(expected, actual.ok().unwrap());
+            assert_eq!(expected, actual.unwrap());
             count += 1;
         }
 
@@ -345,7 +345,7 @@ export   SHELL_LOVER=1
         // Note 4 spaces after 'invalid' below
         let actual_iter = Iter::new(
             r#"
-  invalid    
+  invalid
 very bacon = yes indeed
 =value"#
                 .as_bytes(),
@@ -425,7 +425,7 @@ mod variable_substitution_tests {
         let mut count = 0;
         for (expected, actual) in expected_iter.zip(actual_iter) {
             assert!(actual.is_ok());
-            assert_eq!(expected, actual.ok().unwrap());
+            assert_eq!(expected, actual.unwrap());
             count += 1;
         }
 
