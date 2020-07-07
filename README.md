@@ -1,4 +1,4 @@
-# rust-dotenv 
+# rust-dotenv
 
 ![CI](https://github.com/dotenv-rs/dotenv/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/gh/dotenv-rs/dotenv/branch/master/graph/badge.svg)](https://codecov.io/gh/dotenv-rs/dotenv)
@@ -20,8 +20,7 @@ which setting environment variables is not practical. It loads environment
 variables from a `.env` file, if available, and mashes those with the actual
 environment variables provided by the operative system.
 
-Usage
-----
+## Usage
 
 The easiest and most common usage consists on calling `dotenv::dotenv` when the
 application starts, which will load environment variables from a file named
@@ -35,8 +34,7 @@ use the `from_filename` and `from_path` methods provided by the crate.
 behaves identically to `env!`, but first tries to load a `.env` file at compile
 time.
 
-Examples
-----
+## Examples
 
 A `.env` file looks like this:
 
@@ -66,15 +64,13 @@ fn main() {
 }
 ```
 
-Variable substitution
-----
+## Variable substitution
 
 It's possible to reuse variables in the `.env` file using `$VARIABLE` syntax.
 The syntax and rules are similar to bash ones, here's the example:
 
 
 ```sh
-
 VAR=one
 VAR_2=two
 
@@ -107,8 +103,7 @@ RESULT=$PATH #value: the contents of the $PATH environment variable, even though
 Dotenv will parse the file, substituting the variables the way it's described in the comments.
 
 
-Using the `dotenv!` macro
-------------------------------------
+## Using the `dotenv!` macro
 
 Add `dotenv_codegen` to your dependencies, and add the following to the top of
 your crate:
@@ -122,7 +117,7 @@ Then, in your crate:
 
 ```rust
 fn main() {
-  println!("{}", dotenv!("MEANING_OF_LIFE"));
+    println!("{}", dotenv!("MEANING_OF_LIFE"));
 }
 ```
 
