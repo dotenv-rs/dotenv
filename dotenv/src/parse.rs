@@ -588,17 +588,16 @@ mod error_tests {
 
         assert_eq!(parsed_values.len(), 2);
 
-        if let Ok(first_line) = &parsed_values[0] {
-            assert_eq!(first_line, &(String::from("KEY"), String::from("VALUE")))
-        } else {
-            assert!(false, "Expected the first value to be parsed")
-        }
+        let first_line = parsed_values[0]
+            .as_ref()
+            .expect("Expected the first value to be parsed");
+        assert_eq!(first_line, &(String::from("KEY"), String::from("VALUE")));
 
         if let Err(LineParse(second_value, index)) = &parsed_values[1] {
             assert_eq!(second_value, wrong_value);
             assert_eq!(*index, wrong_value.len() - 1)
         } else {
-            assert!(false, "Expected the second value not to be parsed")
+            panic!("Expected the second value not to be parsed")
         }
     }
 
@@ -614,7 +613,7 @@ mod error_tests {
             assert_eq!(second_value, wrong_key_value);
             assert_eq!(*index, 0)
         } else {
-            assert!(false, "Expected the second value not to be parsed")
+            panic!("Expected the second value not to be parsed")
         }
     }
 
@@ -629,7 +628,7 @@ mod error_tests {
             assert_eq!(wrong_value, wrong_format);
             assert_eq!(*index, 0)
         } else {
-            assert!(false, "Expected the second value not to be parsed")
+            panic!("Expected the second value not to be parsed")
         }
     }
 
@@ -645,7 +644,7 @@ mod error_tests {
             assert_eq!(wrong_value, wrong_escape);
             assert_eq!(*index, wrong_escape.find("\\").unwrap() + 1)
         } else {
-            assert!(false, "Expected the second value not to be parsed")
+            panic!("Expected the second value not to be parsed")
         }
     }
 }
