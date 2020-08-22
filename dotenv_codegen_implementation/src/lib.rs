@@ -41,6 +41,7 @@ pub fn dotenv_or_default(input: TokenStream) -> TokenStream {
         Some(default) => default,
         None => panic!("Missing default value for: {}", var_name),
     };
+
     match env::var(var_name) {
         Ok(val) => quote!(#val).into(),
         Err(VarError::NotPresent) | Err(VarError::NotUnicode(_)) => quote!(#default_val).into(),

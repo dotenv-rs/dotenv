@@ -20,3 +20,6 @@ edition = "2018"
 [dependencies]
 dotenv_codegen_implementation = { version = "0.15", path = "../dotenv_codegen_implementation" }
 proc-macro-hack = "0.5"
+
+[dev-dependencies]
+trybuild = "1.0.32"
