@@ -118,11 +118,32 @@ your crate:
 extern crate dotenv_codegen;
 ```
 
-Then, in your crate:
+Then, in your crate you may retrieve a value like so:
 
 ```rust
 fn main() {
   println!("{}", dotenv!("MEANING_OF_LIFE"));
+}
+```
+
+You may also panic with a supplied error message if the variable does
+not exist:
+
+```rust
+fn main() {
+    dotenv!("A_MISSING_VARIABLE", "This is an error message!");
+}
+```
+
+Or you can supply a default value if the variable does not exist:
+
+```rust
+fn main() {
+    let meaning_of_life: &str = dotenv_or_default!(
+        "A_MISSING_VARIABLE",
+        "42"
+    );
+    println!("{}", meaning_of_life);
 }
 ```
 
