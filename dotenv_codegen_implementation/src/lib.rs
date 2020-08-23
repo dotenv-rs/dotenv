@@ -12,7 +12,11 @@ use syn::Token;
 #[proc_macro_hack]
 pub fn dotenv(input: TokenStream) -> TokenStream {
     if let Err(err) = dotenv::dotenv() {
-        panic!("Error loading .env file: {}", err);
+        let err_msg = format!("Error loading .env file: {}", err);
+        return quote! {
+            compile_error!(#err_msg);
+        }
+        .into();
     }
 
     // Either everything was fine, or we didn't find an .env file (which we ignore)
@@ -32,19 +36,28 @@ pub fn dotenv(input: TokenStream) -> TokenStream {
 #[proc_macro_hack]
 pub fn dotenv_or_default(input: TokenStream) -> TokenStream {
     if let Err(err) = dotenv::dotenv() {
-        panic!("Error loading .env file: {}", err);
+        let err_msg = format!("Error loading .env file: {}", err);
+        return quote! {
+            compile_error!(#err_msg);
+        }
+        .into();
     }
 
     // Either everything was fine, or we didn't find an .env file (which we ignore)
     let (var_name, second_value) = expand_env(input);
-    let default_val = match second_value {
-        Some(default) => default,
-        None => panic!("Missing default value for: {}", var_name),
-    };
 
-    match env::var(var_name) {
-        Ok(val) => quote!(#val).into(),
-        Err(VarError::NotPresent) | Err(VarError::NotUnicode(_)) => quote!(#default_val).into(),
+    match second_value {
+        Some(default) => match env::var(var_name) {
+            Ok(val) => quote!(#val).into(),
+            Err(VarError::NotPresent) | Err(VarError::NotUnicode(_)) => quote!(#default).into(),
+        },
+        None => {
+            let err_msg = format!("Missing default value for: {}", var_name);
+            (quote! {
+                compile_error!(#err_msg)
+            })
+            .into()
+        }
     }
 }
 
