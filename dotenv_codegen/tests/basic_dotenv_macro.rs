@@ -17,3 +17,15 @@ fn two_argument_form_works() {
         "'quotes within quotes'"
     );
 }
+
+#[test]
+fn dotenv_or_default_works() {
+    let default_value: &str = dotenv_or_default!("CODEGEN_TEST_NONEXISTING_VARIABLE", "hello!");
+    assert_eq!(default_value, "hello!");
+}
+
+#[test]
+fn ui() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/ui/*.rs");
+}

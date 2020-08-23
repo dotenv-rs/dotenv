@@ -1,0 +1,16 @@
+error: proc-macro derive panicked
+ --> $DIR/dotenv_three_args.rs:5:5
+  |
+5 |     dotenv!("a", "b", "c");
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: message: expected 1 or 2 arguments, found 3 or more
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `proc_macro_call` in this scope
+ --> $DIR/dotenv_three_args.rs:5:5
+  |
+5 |     dotenv!("a", "b", "c");
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
