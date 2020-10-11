@@ -38,7 +38,7 @@ static START: Once = Once::new();
 /// ```
 pub fn var<K: AsRef<OsStr>>(key: K) -> Result<String> {
     START.call_once(|| {
-        dotenv().ok();
+        let _ = dotenv();
     });
     env::var(key).map_err(Error::EnvVar)
 }
@@ -61,7 +61,7 @@ pub fn var<K: AsRef<OsStr>>(key: K) -> Result<String> {
 /// ```
 pub fn vars() -> Vars {
     START.call_once(|| {
-        dotenv().ok();
+        let _ = dotenv();
     });
     env::vars()
 }
@@ -109,7 +109,7 @@ pub fn from_path_iter<P: AsRef<Path>>(path: P) -> Result<Iter<File>> {
 /// # Examples
 /// ```
 /// use dotenv;
-/// dotenv::from_filename("custom.env").ok();
+/// let _ = dotenv::from_filename("custom.env");
 /// ```
 ///
 /// It is also possible to do the following, but it is equivalent to using `dotenv::dotenv()`,
@@ -117,7 +117,7 @@ pub fn from_path_iter<P: AsRef<Path>>(path: P) -> Result<Iter<File>> {
 ///
 /// ```
 /// use dotenv;
-/// dotenv::from_filename(".env").ok();
+/// let _ =  dotenv::from_filename(".env");
 /// ```
 pub fn from_filename<P: AsRef<Path>>(filename: P) -> Result<PathBuf> {
     let (path, iter) = Finder::new().filename(filename.as_ref()).find()?;
@@ -130,7 +130,7 @@ pub fn from_filename<P: AsRef<Path>>(filename: P) -> Result<PathBuf> {
 /// # Examples
 /// ```
 /// use dotenv;
-/// dotenv::from_filename("custom.env").ok();
+/// let _ = dotenv::from_filename("custom.env");
 /// ```
 ///
 /// It is also possible to do the following, but it is equivalent to using `dotenv::dotenv()`,
@@ -156,7 +156,7 @@ pub fn from_filename_iter<P: AsRef<Path>>(filename: P) -> Result<Iter<File>> {
 /// # Examples
 /// ```
 /// use dotenv;
-/// dotenv::dotenv().ok();
+/// let _ = dotenv::dotenv();
 /// ```
 pub fn dotenv() -> Result<PathBuf> {
     let (path, iter) = Finder::new().find()?;

@@ -13,7 +13,7 @@ fn test_child_dir() {
 
     env::set_current_dir("child").unwrap();
 
-    dotenv().ok();
+    let _ = dotenv();
     assert_eq!(env::var("TESTKEY").unwrap(), "test_val");
 
     env::set_current_dir(dir.path().parent().unwrap()).unwrap();
