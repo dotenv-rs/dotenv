@@ -29,6 +29,15 @@ impl<R: Read> Iter<R> {
 
         Ok(())
     }
+
+    pub fn load_overwrite(self) -> Result<()> {
+        for item in self {
+            let (key, value) = item?;
+            env::set_var(&key, value);
+        }
+
+        Ok(())
+    }
 }
 
 impl<R: Read> Iterator for Iter<R> {
