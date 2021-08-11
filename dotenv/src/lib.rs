@@ -164,6 +164,19 @@ pub fn dotenv() -> Result<PathBuf> {
     Ok(path)
 }
 
+/// A version of [dotenv] that overwrites existing env vars
+///
+/// # Examples
+/// ```
+/// use dotenv::dotenv_overwrite;
+/// dotenv_overwrite().ok();
+/// ```
+pub fn dotenv_overwrite() -> Result<PathBuf> {
+    let (path, iter) = Finder::new().find()?;
+    iter.load_overwrite()?;
+    Ok(path)
+}
+
 /// Like `dotenv`, but returns an iterator over variables instead of loading into environment.
 ///
 /// # Examples
