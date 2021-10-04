@@ -3,13 +3,13 @@ extern crate proc_macro;
 use std::env::{self, VarError};
 
 use proc_macro::TokenStream;
-use proc_macro_hack::proc_macro_hack;
+//use proc_macro_hack::proc_macro_hack;
 use quote::quote;
 use syn::parse::Parser;
 use syn::punctuated::Punctuated;
 use syn::Token;
 
-#[proc_macro_hack]
+#[proc_macro]
 pub fn dotenv(input: TokenStream) -> TokenStream {
     if let Err(err) = dotenv::dotenv() {
         panic!("Error loading .env file: {}", err);
