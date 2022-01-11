@@ -180,6 +180,7 @@ fn parse_value(
                             apply_substitution(
                                 substitution_data,
                                 &substitution_name.drain(..).collect::<String>(),
+                                false,
                                 &mut output,
                             );
                             if c == '$' {
@@ -200,6 +201,7 @@ fn parse_value(
                             apply_substitution(
                                 substitution_data,
                                 &substitution_name.drain(..).collect::<String>(),
+                                true,
                                 &mut output,
                             );
                         } else {
@@ -250,6 +252,7 @@ fn parse_value(
         apply_substitution(
             substitution_data,
             &substitution_name.drain(..).collect::<String>(),
+            false,
             &mut output,
         );
         Ok(output)
@@ -259,17 +262,51 @@ fn parse_value(
 fn apply_substitution(
     substitution_data: &mut HashMap<String, Option<String>>,
     substitution_name: &str,
+    from_escaped_block: bool,
     output: &mut String,
 ) {
-    if let Ok(environment_value) = std::env::var(substitution_name) {
-        output.push_str(&environment_value);
+    let (substitution_name, default) = if from_escaped_block {
+        // https://man7.org/linux/man-pages/man1/bash.1.html#PARAMETERS
+        // Parameter Expansion
+        if let Some((name, action)) = substitution_name.split_once(":") {
+            let (mode, default) = action.split_at(1);
+            match mode {
+                "-" => (name, default),
+                "=" => {
+                    if get_substitution(&substitution_data, name).is_none() {
+                        substitution_data.insert(name.to_owned(), Some(default.to_owned()));
+                    }
+
+                    (name, default)
+                }
+                _ => {
+                    panic!(
+                        "unexpected substitution mode {} (raw input {})",
+                        mode, substitution_name
+                    );
+                }
+            }
+        } else {
+            (substitution_name, "")
+        }
     } else {
-        let stored_value = substitution_data
-            .get(substitution_name)
-            .unwrap_or(&None)
-            .to_owned();
-        output.push_str(&stored_value.unwrap_or_else(String::new));
+        (substitution_name, "")
     };
+
+    output.push_str(
+        &get_substitution(substitution_data, substitution_name).unwrap_or(default.to_owned()),
+    );
+}
+
+fn get_substitution(
+    substitution_data: &HashMap<String, Option<String>>,
+    substitution_name: &str,
+) -> Option<String> {
+    std::env::var(substitution_name).ok().or_else(|| {
+        substitution_data
+            .get(substitution_name)
+            .and_then(|x| x.clone())
+    })
 }
 
 #[cfg(test)]
@@ -534,6 +571,43 @@ mod variable_substitution_tests {
     KEY=">${KEY11}<"
     "#,
             vec![("KEY11", "test_user"), ("KEY", ">test_user_env<")],
+        );
+    }
+
+    #[test]
+    fn substitute_variable_with_default() {
+        std::env::set_var("KEY11", "test_user_env");
+
+        assert_parsed_string(
+            r#"
+    KEY1=${KEY11:-test_user}
+    KEY2=${KEY12:-test_user}
+    "#,
+            vec![("KEY1", "test_user_env"), ("KEY2", "test_user")],
+        );
+    }
+
+    #[test]
+    fn substitute_variable_with_default_assignment() {
+        assert_parsed_string(
+            r#"
+    KEY1=${KEY:=test_user_1}
+    KEY2=${KEY:=test_user_2}
+    "#,
+            vec![("KEY1", "test_user_1"), ("KEY2", "test_user_1")],
+        );
+    }
+
+    #[test]
+    fn substitute_variable_with_default_do_not_overwrite_existing() {
+        std::env::set_var("KEY11", "test_user_env");
+
+        assert_parsed_string(
+            r#"
+    KEY1=${KEY11:=test_user}
+    KEY2=${KEY11:=test_user}
+    "#,
+            vec![("KEY1", "test_user_env"), ("KEY2", "test_user_env")],
         );
     }
 
