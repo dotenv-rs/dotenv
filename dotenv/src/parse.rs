@@ -305,7 +305,7 @@ fn get_substitution(
     std::env::var(substitution_name).ok().or_else(|| {
         substitution_data
             .get(substitution_name)
-            .and_then(|x| x.clone())
+            .and_then(|x| x.to_owned())
     })
 }
 
