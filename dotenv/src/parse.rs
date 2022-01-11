@@ -182,7 +182,10 @@ fn parse_value(
                                 &substitution_name.drain(..).collect::<String>(),
                                 false,
                                 &mut output,
-                            );
+                            )
+                            .map_err(|e| {
+                                Error::LineParse(format!("{} ({})", input.to_owned(), e), index)
+                            })?;
                             if c == '$' {
                                 substitution_mode = if !strong_quote && !escaped {
                                     SubstitutionMode::Block
@@ -203,7 +206,10 @@ fn parse_value(
                                 &substitution_name.drain(..).collect::<String>(),
                                 true,
                                 &mut output,
-                            );
+                            )
+                            .map_err(|e| {
+                                Error::LineParse(format!("{} ({})", input.to_owned(), e), index)
+                            })?;
                         } else {
                             substitution_name.push(c);
                         }
@@ -237,24 +243,27 @@ fn parse_value(
         }
     }
 
+    let value_length = input.len();
+    let last_char_position = if value_length == 0 {
+        0
+    } else {
+        value_length - 1
+    };
+
     //XXX also fail if escaped? or...
     if substitution_mode == SubstitutionMode::EscapedBlock || strong_quote || weak_quote {
-        let value_length = input.len();
-        Err(Error::LineParse(
-            input.to_owned(),
-            if value_length == 0 {
-                0
-            } else {
-                value_length - 1
-            },
-        ))
+        Err(Error::LineParse(input.to_owned(), last_char_position))
     } else {
         apply_substitution(
             substitution_data,
             &substitution_name.drain(..).collect::<String>(),
             false,
             &mut output,
-        );
+        )
+        .map_err(|e| {
+            Error::LineParse(format!("{} ({})", input.to_owned(), e), last_char_position)
+        })?;
+
         Ok(output)
     }
 }
@@ -264,11 +273,14 @@ fn apply_substitution(
     substitution_name: &str,
     from_escaped_block: bool,
     output: &mut String,
-) {
+) -> std::result::Result<(), String> {
     let (substitution_name, default) = if from_escaped_block {
         // https://man7.org/linux/man-pages/man1/bash.1.html#PARAMETERS
         // Parameter Expansion
         if let Some((name, action)) = substitution_name.split_once(":") {
+            if action.len() < 1 {
+                return Err("no substitution mode given".to_owned());
+            }
             let (mode, default) = action.split_at(1);
             match mode {
                 "-" => (name, default),
@@ -280,10 +292,7 @@ fn apply_substitution(
                     (name, default)
                 }
                 _ => {
-                    panic!(
-                        "unexpected substitution mode {} (raw input {})",
-                        mode, substitution_name
-                    );
+                    return Err(format!("unexpected substitution mode {}", mode));
                 }
             }
         } else {
@@ -296,6 +305,8 @@ fn apply_substitution(
     output.push_str(
         &get_substitution(substitution_data, substitution_name).unwrap_or(default.to_owned()),
     );
+
+    Ok(())
 }
 
 fn get_substitution(
@@ -606,8 +617,13 @@ mod variable_substitution_tests {
             r#"
     KEY1=${KEY11:=test_user}
     KEY2=${KEY11:=test_user}
+    KEY3=${KEY11}
     "#,
-            vec![("KEY1", "test_user_env"), ("KEY2", "test_user_env")],
+            vec![
+                ("KEY1", "test_user_env"),
+                ("KEY2", "test_user_env"),
+                ("KEY3", "test_user_env"),
+            ],
         );
     }
 
@@ -720,6 +736,63 @@ mod error_tests {
             assert_eq!(*index, wrong_escape.find("\\").unwrap() + 1)
         } else {
             assert!(false, "Expected the second value not to be parsed")
+        }
+    }
+
+    #[test]
+    fn substitute_variable_with_invalid_mode() {
+        let invalid_mode_value = "${DEFAULT:invalid}";
+        let no_mode_value = "${DEFAULT:}";
+
+        let parsed_values: Vec<_> = Iter::new(
+            format!(
+                r#"
+DEFAULT=default
+KEY1=${{DEFAULT:-non-default}}
+KEY2={}
+KEY3={}
+"#,
+                invalid_mode_value, no_mode_value
+            )
+            .as_bytes(),
+        )
+        .collect();
+
+        assert_eq!(parsed_values.len(), 4);
+
+        if let Ok(first_line) = &parsed_values[0] {
+            assert_eq!(
+                first_line,
+                &(String::from("DEFAULT"), String::from("default"))
+            )
+        } else {
+            assert!(false, "Expected the first value to be parsed")
+        }
+
+        if let Ok(second_line) = &parsed_values[1] {
+            assert_eq!(
+                second_line,
+                &(String::from("KEY1"), String::from("default"))
+            )
+        } else {
+            assert!(false, "Expected the second value to be parsed")
+        }
+
+        if let Err(LineParse(third_value, index)) = &parsed_values[2] {
+            assert_eq!(
+                third_value,
+                "${DEFAULT:invalid} (unexpected substitution mode i)"
+            );
+            assert_eq!(*index, invalid_mode_value.len() - 1);
+        } else {
+            assert!(false, "Expected the third value not to be parsed")
+        }
+
+        if let Err(LineParse(forth_value, index)) = &parsed_values[3] {
+            assert_eq!(forth_value, "${DEFAULT:} (no substitution mode given)");
+            assert_eq!(*index, no_mode_value.len() - 1);
+        } else {
+            assert!(false, "Expected the forth value not to be parsed")
         }
     }
 }
