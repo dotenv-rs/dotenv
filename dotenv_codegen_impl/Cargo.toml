@@ -1,6 +1,9 @@
+[lib]
+proc-macro = true
+
 [package]
 
-name = "dotenvy_macro"
+name = "dotenvy_codegen_impl"
 version = "0.15.1"
 authors = [
   "Santiago Lapresta <santiago.lapresta@gmail.com>",
@@ -10,14 +13,17 @@ authors = [
   "Sean Griffin <sean@seantheprogrammer.com>",
   "Allan Zhang <al@ayz.ai>",
 ]
-readme = "README.md"
+readme = "../README.md"
 keywords = ["dotenv", "env", "environment", "settings", "config"]
 license = "MIT"
 homepage = "https://github.com/allan2/dotenvy"
 repository = "https://github.com/allan2/dotenvy"
-description = "A macro for compile time dotenv inspection"
+description = "Internal implementation for dotenvy_codegen"
 edition = "2021"
 
 [dependencies]
-dotenvy_codegen_impl = { version = "0.15", path = "../dotenv_codegen_impl" }
+proc-macro2 = "1.0.36"
+quote = "1.0.15"
+syn = "1.0.86"
 proc-macro-hack = "0.5.19"
+dotenvy = { version = "0.15", path = "../dotenv" }
