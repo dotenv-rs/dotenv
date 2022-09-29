@@ -1,9 +1,7 @@
-//! This crate provides a configuration loader in the style of the [ruby dotenv
-//! gem](https://github.com/bkeepers/dotenv). This library is meant to be used
-//! on development or testing environments in which setting environment
-//! variables is not practical. It loads environment variables from a .env
-//! file, if available, and mashes those with the actual environment variables
-//! provided by the operating system.
+//! [`dotenv`]: https://crates.io/crates/dotenv
+//! A well-maintained fork of the [`dotenv`] crate
+//!
+//! This library loads environment variables from a *.env* file. This is convenient for dev environments.
 
 mod errors;
 mod find;
@@ -13,6 +11,7 @@ mod parse;
 use std::env::{self, Vars};
 use std::ffi::OsStr;
 use std::fs::File;
+use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Once;
 
@@ -22,19 +21,18 @@ use crate::iter::Iter;
 
 static START: Once = Once::new();
 
-/// After loading the dotenv file, fetches the environment variable key from the current process.
+/// Gets the value for an environment variable.
 ///
-/// The returned result is Ok(s) if the environment variable is present and is valid unicode. If the
-/// environment variable is not present, or it is not valid unicode, then Err will be returned.
+/// The value is `Ok(s)` if the environment variable is present and valid unicode.
 ///
-/// Examples:
+/// Note: this function gets values from any visible environment variable key,
+/// regardless of whether a *.env* file was loaded.
+///
+/// # Examples:
 ///
 /// ```no_run
-///
-/// use dotenv;
-///
-/// let key = "FOO";
-/// let value= dotenv::var(key).unwrap();
+/// let value = dotenvy::var("HOME").unwrap();
+/// println!("{value}");  // prints `/home/foo`
 /// ```
 pub fn var<K: AsRef<OsStr>>(key: K) -> Result<String> {
     START.call_once(|| {
@@ -43,21 +41,15 @@ pub fn var<K: AsRef<OsStr>>(key: K) -> Result<String> {
     env::var(key).map_err(Error::EnvVar)
 }
 
-/// After loading the dotenv file, returns an iterator of (variable, value) pairs of strings,
-/// for all the environment variables of the current process.
+/// Returns an iterator of `(key, value)` pairs for all environment variables of the current process.
+/// The returned iterator contains a snapshot of the process's environment variables at the time of invocation. Modifications to environment variables afterwards will not be reflected.
 ///
-/// The returned iterator contains a snapshot of the process's environment variables at the
-/// time of this invocation, modifications to environment variables afterwards will not be
-/// reflected in the returned iterator.
 ///
-/// Examples:
+/// # Examples:
 ///
-/// ```no_run
-///
-/// use dotenv;
 /// use std::io;
 ///
-/// let result: Vec<(String, String)> = dotenv::vars().collect();
+/// let result: Vec<(String, String)> = dotenvy::vars().collect();
 /// ```
 pub fn vars() -> Vars {
     START.call_once(|| {
@@ -66,58 +58,50 @@ pub fn vars() -> Vars {
     env::vars()
 }
 
-/// Loads the file at the specified absolute path.
+/// Loads environment variables from the specified path.
 ///
-/// Examples
+/// # Examples
 ///
-/// ```
-/// use dotenv;
-/// use std::env;
-/// use std::path::{Path};
+/// ```no_run
+/// use dirs::home_dir;
 ///
-/// let my_path = env::home_dir().and_then(|a| Some(a.join("/.env"))).unwrap();
-/// dotenv::from_path(my_path.as_path());
+/// let my_path = home_dir().map(|a| a.join("/absolute/path/.env")).unwrap();
+/// dotenvy::from_path(my_path.as_path());
 /// ```
 pub fn from_path<P: AsRef<Path>>(path: P) -> Result<()> {
     let iter = Iter::new(File::open(path).map_err(Error::Io)?);
     iter.load()
 }
 
-/// Like `from_path`, but returns an iterator over variables instead of loading into environment.
+///  Returns an iterator over environment variables from the specified path.
 ///
-/// Examples
+/// # Examples
 ///
 /// ```no_run
-/// use dotenv;
-/// use std::env;
-/// use std::path::{Path};
+/// use dirs::home_dir;
 ///
-/// let my_path = env::home_dir().and_then(|a| Some(a.join("/.env"))).unwrap();
-/// let iter = dotenv::from_path_iter(my_path.as_path()).unwrap();
+/// let my_path = home_dir().map(|a| a.join("/absolute/path/.env")).unwrap();
 ///
-/// for item in iter {
+/// for item in dotenvy::from_path_iter(my_path.as_path()).unwrap() {
 ///   let (key, val) = item.unwrap();
-///   println!("{}={}", key, val);
+///   println!("{key}={val}");
 /// }
 /// ```
 pub fn from_path_iter<P: AsRef<Path>>(path: P) -> Result<Iter<File>> {
     Ok(Iter::new(File::open(path).map_err(Error::Io)?))
 }
 
-/// Loads the specified file from the environment's current directory or its parents in sequence.
+/// Loads environment variables from the specified file.
 ///
 /// # Examples
-/// ```
-/// use dotenv;
-/// dotenv::from_filename("custom.env").ok();
+/// ```no_run
+/// dotenvy::from_filename("custom.env").unwrap();
 /// ```
 ///
-/// It is also possible to do the following, but it is equivalent to using `dotenv::dotenv()`,
-/// which is preferred.
+/// It is also possible to load from a typical *.env* file like so. However, using [dotenv] is preferred.
 ///
 /// ```
-/// use dotenv;
-/// dotenv::from_filename(".env").ok();
+/// dotenvy::from_filename(".env").unwrap();
 /// ```
 pub fn from_filename<P: AsRef<Path>>(filename: P) -> Result<PathBuf> {
     let (path, iter) = Finder::new().filename(filename.as_ref()).find()?;
@@ -125,38 +109,67 @@ pub fn from_filename<P: AsRef<Path>>(filename: P) -> Result<PathBuf> {
     Ok(path)
 }
 
-/// Like `from_filename`, but returns an iterator over variables instead of loading into environment.
+///  Returns an iterator over environment variables from the specified file.
 ///
 /// # Examples
-/// ```
-/// use dotenv;
-/// dotenv::from_filename("custom.env").ok();
-/// ```
-///
-/// It is also possible to do the following, but it is equivalent to using `dotenv::dotenv()`,
-/// which is preferred.
-///
 /// ```no_run
-/// use dotenv;
-/// let iter = dotenv::from_filename_iter(".env").unwrap();
-///
-/// for item in iter {
-///   let (key, val) = item.unwrap();
-///   println!("{}={}", key, val);
-/// }
+/// for item in dotenvy::from_filename_iter("custom.env").unwrap() {
+///     let (key, val) = item.unwrap();
+///     println!("{key}={val}");
+///   }
 /// ```
+
 pub fn from_filename_iter<P: AsRef<Path>>(filename: P) -> Result<Iter<File>> {
     let (_, iter) = Finder::new().filename(filename.as_ref()).find()?;
     Ok(iter)
 }
 
-/// This is usually what you want.
-/// It loads the .env file located in the environment's current directory or its parents in sequence.
+/// Loads environment variables from [io::Read](std::io::Read).
+///
+/// This is useful for loading environment variables from from IPC or the network.
+///
+/// For regular files, use [from_path] or [from_filename].
 ///
 /// # Examples
+/// ```no_run
+/// # #![cfg(unix)]
+/// use std::io::Read;
+/// use std::os::unix::net::UnixStream;
+///
+/// let mut stream = UnixStream::connect("/some/socket").unwrap();
+/// dotenvy::from_read(stream).unwrap();
 /// ```
-/// use dotenv;
-/// dotenv::dotenv().ok();
+pub fn from_read<R: io::Read>(reader: R) -> Result<()> {
+    let iter = Iter::new(reader);
+    iter.load()?;
+    Ok(())
+}
+
+/// Returns an iterator over environment variables from [io::Read](std::io::Read).
+///
+/// # Examples
+///
+/// ```no_run
+/// # #![cfg(unix)]
+/// use std::io::Read;
+/// use std::os::unix::net::UnixStream;
+///
+/// let mut stream = UnixStream::connect("/some/socket").unwrap();
+///
+/// for item in dotenvy::from_read_iter(stream) {
+///   let (key, val) = item.unwrap();
+///   println!("{key}={val}");
+/// }
+/// ```
+pub fn from_read_iter<R: io::Read>(reader: R) -> Iter<R> {
+    Iter::new(reader)
+}
+/// Loads the *.env* file from the current directory or parents. This is typically what you want.
+///
+/// An error will be returned if the file is not found.
+/// # Examples
+/// ```
+/// dotenvy::dotenv().unwrap();
 /// ```
 pub fn dotenv() -> Result<PathBuf> {
     let (path, iter) = Finder::new().find()?;
@@ -164,15 +177,13 @@ pub fn dotenv() -> Result<PathBuf> {
     Ok(path)
 }
 
-/// Like `dotenv`, but returns an iterator over variables instead of loading into environment.
+/// Returns an iterator over environment variables.
 ///
 /// # Examples
-/// ```no_run
-/// use dotenv;
-///
-/// for item in dotenv::dotenv_iter().unwrap() {
+/// ```
+/// for item in dotenvy::dotenv_iter().unwrap() {
 ///   let (key, val) = item.unwrap();
-///   println!("{}={}", key, val);
+///   println!("{key}={val}");
 /// }
 /// ```
 pub fn dotenv_iter() -> Result<iter::Iter<File>> {
