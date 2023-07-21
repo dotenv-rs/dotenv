@@ -151,17 +151,38 @@ pub fn from_filename_iter<P: AsRef<Path>>(filename: P) -> Result<Iter<File>> {
 }
 
 /// This is usually what you want.
-/// It loads the .env file located in the environment's current directory or its parents in sequence.
+///
+/// It loads the .env files located in the environment's current directory or its parents in sequence.
+/// Multiple files are attempted in order of priority. Variables in lower priority files get overwritten
+/// by variables in higher priority files.
+///
+/// Order of files is the same as the Ruby dotenv gem, see <https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use>.
 ///
 /// # Examples
 /// ```
 /// use dotenv;
 /// dotenv::dotenv().ok();
 /// ```
-pub fn dotenv() -> Result<PathBuf> {
-    let (path, iter) = Finder::new().find()?;
-    iter.load()?;
-    Ok(path)
+pub fn dotenv() -> Result<()> {
+    for file in [
+        ".env",
+        ".env.production",
+        ".env.test",
+        ".env.development",
+        ".env.local",
+        ".env.production.local",
+        ".env.test.local",
+        ".env.development.local",
+    ] {
+        let finder = Finder::new().filename(&Path::new(file));
+
+        match finder.find() {
+            Ok((_path, iter)) => iter.load()?,
+            Err(_) => continue,
+        };
+    }
+
+    Ok(())
 }
 
 /// Like `dotenv`, but returns an iterator over variables instead of loading into environment.
