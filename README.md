@@ -9,8 +9,8 @@ Submitting pull requests and issues is highly encouraged!
 
 Quoting [bkeepers/dotenv][dotenv]:
 
-> Storing [configuration in the environment](http://www.12factor.net/config)
-> is one of the tenets of a [twelve-factor app](http://www.12factor.net/).
+> Storing [configuration in the environment](https://12factor.net/config)
+> is one of the tenets of a [twelve-factor app](https://12factor.net/).
 > Anything that is likely to change between deployment environments–such as
 > resource handles for databases or credentials for external services–should
 > be extracted from the code into environment variables.
