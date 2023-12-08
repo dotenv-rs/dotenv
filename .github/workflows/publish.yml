@@ -24,6 +24,17 @@ jobs:
                     toolchain: stable
                     override: true
 
-            -   run: cargo publish --token ${CRATES_TOKEN}
+            -   name: Publish dotenvx
+                run: cargo publish --token ${CRATES_TOKEN} -p dotenvx
+                env:
+                    CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+
+            -   name: Publish dotenvx_codegen_implementation
+                run: cargo publish --token ${CRATES_TOKEN} -p dotenvx_codegen_implementation
+                env:
+                    CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+
+            -   name: Publish dotenvx_codegen
+                run: cargo publish --token ${CRATES_TOKEN} -p dotenvx_codegen
                 env:
                     CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
