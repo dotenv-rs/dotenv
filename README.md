@@ -1,9 +1,14 @@
 # dotenvx - rust-dotenv
 
+[![Crates.io](https://img.shields.io/crates/v/dotenvx.svg)](https://crates.io/crates/dotenvx)
+[![docs.rs](https://docs.rs/dotenvx/badge.svg)](https://docs.rs/dotenvx)
 [![License](https://img.shields.io/github/license/codemountains/dotenvx)](LICENSE)
 
-**Achtung!** This is a v0.\* version! Expect bugs and issues all around.
-Submitting pull requests and issues is highly encouraged!
+Forked from the [dotenv](https://github.com/dotenv-rs/dotenv) crate.
+
+**This is a v0.\* version! Expect bugs and issues all around.**
+
+## About `dotenv`
 
 Quoting [bkeepers/dotenv][dotenv]:
 
@@ -18,8 +23,7 @@ which setting environment variables is not practical. It loads environment
 variables from a `.env` file, if available, and mashes those with the actual
 environment variables provided by the operative system.
 
-Usage
-----
+## Usage
 
 The easiest and most common usage consists on calling `dotenv::dotenv` when the
 application starts, which will load environment variables from a file named
@@ -33,8 +37,7 @@ use the `from_filename` and `from_path` methods provided by the crate.
 behaves identically to `env!`, but first tries to load a `.env` file at compile
 time.
 
-Examples
-----
+### Examples
 
 A `.env` file looks like this:
 
@@ -64,8 +67,7 @@ fn main() {
 }
 ```
 
-Variable substitution
-----
+### Variable substitution
 
 It's possible to reuse variables in the `.env` file using `$VARIABLE` syntax.
 The syntax and rules are similar to bash ones, here's the example:
@@ -104,9 +106,7 @@ RESULT=$PATH #value: the contents of the $PATH environment variable, even though
 
 Dotenv will parse the file, substituting the variables the way it's described in the comments.
 
-
-Using the `dotenv!` macro
-------------------------------------
+## Using the `dotenv!` macro
 
 Add `dotenv_codegen` to your dependencies, and add the following to the top of
 your crate:
@@ -123,5 +123,9 @@ fn main() {
   println!("{}", dotenv!("MEANING_OF_LIFE"));
 }
 ```
+
+## LICENSE
+
+This project is licensed under the [MIT license](LICENSE).
 
 [dotenv]: https://github.com/bkeepers/dotenv
