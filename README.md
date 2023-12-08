@@ -1,8 +1,6 @@
-# rust-dotenv 
+# dotenvx - rust-dotenv
 
-![CI](https://github.com/dotenv-rs/dotenv/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/dotenv-rs/dotenv/branch/master/graph/badge.svg)](https://codecov.io/gh/dotenv-rs/dotenv)
-[![Crates.io](https://img.shields.io/crates/v/dotenv.svg)](https://crates.io/crates/dotenv)
+[![License](https://img.shields.io/github/license/codemountains/dotenvx)](LICENSE)
 
 **Achtung!** This is a v0.\* version! Expect bugs and issues all around.
 Submitting pull requests and issues is highly encouraged!
