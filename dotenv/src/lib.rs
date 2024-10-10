@@ -179,3 +179,24 @@ pub fn dotenv_iter() -> Result<iter::Iter<File>> {
     let (_, iter) = Finder::new().find()?;
     Ok(iter)
 }
+
+
+/// Like `dotenv`, but returns an HashMap over variables instead of loading into environment.
+/// Unlike 'dotenv().ok()', this function only retrieves variables from the .env file, without loading them into the environment.
+/// # Examples
+/// ```no_run
+/// use dotenv;
+///
+/// let dotenv_values: std::collections::HashMap<String, String> = dotenv::dotenv_values().unwrap();
+/// dotenv_values.iter()
+///     .for_each(|item| println!("{:?}", item));
+///
+/// ```
+pub fn dotenv_values() -> Result<std::collections::HashMap<String, String>> {
+    let vars = dotenv_iter()?
+        .filter_map(|item| item.ok())
+        .collect::<std::collections::HashMap<String, String>>();
+
+    Ok(vars)
+}
+
