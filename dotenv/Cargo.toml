@@ -29,4 +29,4 @@ clap = { version = "2", optional = true }
 tempfile = "3.0.0"
 
 [features]
-cli = ["clap"]
+cli = ["dep:clap"]
