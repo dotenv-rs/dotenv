@@ -6,26 +6,54 @@ use crate::errors::*;
 use crate::iter::Iter;
 
 pub struct Finder<'a> {
-    filename: &'a Path,
+    filenames: Vec<&'a Path>,
 }
 
 impl<'a> Finder<'a> {
     pub fn new() -> Self {
         Finder {
-            filename: Path::new(".env"),
+            filenames: vec![Path::new(".env")],
         }
     }
 
     pub fn filename(mut self, filename: &'a Path) -> Self {
-        self.filename = filename;
+        self.filenames = vec![filename];
+        self
+    }
+
+    pub fn filenames(mut self, filenames: Vec<&'a Path>) -> Self {
+        self.filenames = filenames;
         self
     }
 
     pub fn find(self) -> Result<(PathBuf, Iter<File>)> {
-        let path = find(&env::current_dir().map_err(Error::Io)?, self.filename)?;
-        let file = File::open(&path).map_err(Error::Io)?;
-        let iter = Iter::new(file);
-        Ok((path, iter))
+        if self.filenames.is_empty() {
+            return Err(Error::Io(io::Error::new(
+                io::ErrorKind::NotFound,
+                "No filenames specified",
+            )));
+        }
+        
+        let current_dir = &env::current_dir().map_err(Error::Io)?;
+        
+        for filename in &self.filenames {
+            match find(current_dir, filename) {
+                Ok(path) => {
+                    let file = File::open(&path).map_err(Error::Io)?;
+                    let iter = Iter::new(file);
+                    return Ok((path, iter));
+                }
+                Err(e) if e.not_found() => continue,
+                Err(e) => return Err(e),
+            }
+        }
+        
+        // If we get here, none of the files were found
+        Err(Error::Io(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("None of the specified dotenv files found: {:?}", 
+                self.filenames.iter().map(|p| p.to_string_lossy()).collect::<Vec<_>>()),
+        )))
     }
 }
 
