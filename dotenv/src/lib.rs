@@ -150,6 +150,48 @@ pub fn from_filename_iter<P: AsRef<Path>>(filename: P) -> Result<Iter<File>> {
     Ok(iter)
 }
 
+/// Loads the first available file from the specified list of filenames from the environment's current directory or its parents in sequence.
+///
+/// This function will try each filename in order until it finds one that exists, then load that file.
+/// If none of the files exist, it returns an error.
+///
+/// # Examples
+/// ```
+/// use dotenv;
+/// 
+/// // Try to load from .env.local first, then .env if .env.local doesn't exist
+/// dotenv::from_filenames(&[".env.local", ".env"]).ok();
+/// ```
+pub fn from_filenames<P: AsRef<Path>>(filenames: &[P]) -> Result<PathBuf> {
+    let paths: Vec<&Path> = filenames.iter().map(|p| p.as_ref()).collect();
+    let (path, iter) = Finder::new().filenames(paths).find()?;
+    iter.load()?;
+    Ok(path)
+}
+
+/// Like `from_filenames`, but returns an iterator over variables instead of loading into environment.
+///
+/// This function will try each filename in order until it finds one that exists, then return an iterator for that file.
+/// If none of the files exist, it returns an error.
+///
+/// # Examples
+/// ```no_run
+/// use dotenv;
+/// 
+/// // Try to load from .env.local first, then .env if .env.local doesn't exist
+/// let iter = dotenv::from_filenames_iter(&[".env.local", ".env"]).unwrap();
+///
+/// for item in iter {
+///   let (key, val) = item.unwrap();
+///   println!("{}={}", key, val);
+/// }
+/// ```
+pub fn from_filenames_iter<P: AsRef<Path>>(filenames: &[P]) -> Result<Iter<File>> {
+    let paths: Vec<&Path> = filenames.iter().map(|p| p.as_ref()).collect();
+    let (_, iter) = Finder::new().filenames(paths).find()?;
+    Ok(iter)
+}
+
 /// This is usually what you want.
 /// It loads the .env file located in the environment's current directory or its parents in sequence.
 ///
